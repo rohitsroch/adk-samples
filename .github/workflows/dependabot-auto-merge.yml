@@ -74,7 +74,7 @@ jobs:
           echo "PR Mergeable: $PR_MERGEABLE"
           echo "PR State: $PR_STATE"
 
-          if [ "$PR_AUTHOR" = "dependabot[bot]" ]; then
+          if [ "$PR_AUTHOR" = "dependabot[bot]" ] || [ "$PR_AUTHOR" = "app/dependabot" ]; then
             echo "is_dependabot=true" >> $GITHUB_OUTPUT
           else
             echo "is_dependabot=false" >> $GITHUB_OUTPUT
