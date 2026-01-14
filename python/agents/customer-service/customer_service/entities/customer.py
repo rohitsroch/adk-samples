@@ -13,7 +13,7 @@
 # limitations under the License.
 """Customer entity module."""
 
-from typing import Dict, List, Optional
+from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -47,7 +47,7 @@ class Purchase(BaseModel):
     """
 
     date: str
-    items: List[Product]
+    items: list[Product]
     total_amount: float
     model_config = ConfigDict(from_attributes=True)
 
@@ -72,7 +72,7 @@ class GardenProfile(BaseModel):
     size: str
     sun_exposure: str
     soil_type: str
-    interests: List[str]
+    interests: list[str]
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -90,12 +90,12 @@ class Customer(BaseModel):
     customer_start_date: str
     years_as_customer: int
     billing_address: Address
-    purchase_history: List[Purchase]
+    purchase_history: list[Purchase]
     loyalty_points: int
     preferred_store: str
     communication_preferences: CommunicationPreferences
     garden_profile: GardenProfile
-    scheduled_appointments: Dict = Field(default_factory=dict)
+    scheduled_appointments: dict = Field(default_factory=dict)
     model_config = ConfigDict(from_attributes=True)
 
     def to_json(self) -> str:

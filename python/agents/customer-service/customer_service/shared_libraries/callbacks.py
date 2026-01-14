@@ -16,9 +16,8 @@
 
 import logging
 import time
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
 
-from customer_service.entities.customer import Customer
 from google.adk.agents.callback_context import CallbackContext
 from google.adk.agents.invocation_context import InvocationContext
 from google.adk.models import LlmRequest
@@ -27,11 +26,14 @@ from google.adk.tools import BaseTool
 from google.adk.tools.tool_context import ToolContext
 from jsonschema import ValidationError
 
+from customer_service.entities.customer import Customer
+
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 RATE_LIMIT_SECS = 60
 RPM_QUOTA = 10
+MAX_DISCOUNT_RATE = 10
 
 
 def rate_limit_callback(
@@ -51,11 +53,11 @@ def rate_limit_callback(
 
     now = time.time()
     if "timer_start" not in callback_context.state:
-
         callback_context.state["timer_start"] = now
         callback_context.state["request_count"] = 1
         logger.debug(
-            "rate_limit_callback [timestamp: %i, " "req_count: 1, elapsed_secs: 0]",
+            "rate_limit_callback [timestamp: %i, "
+            "req_count: 1, elapsed_secs: 0]",
             now,
         )
         return
@@ -63,7 +65,8 @@ def rate_limit_callback(
     request_count = callback_context.state["request_count"] + 1
     elapsed_secs = now - callback_context.state["timer_start"]
     logger.debug(
-        "rate_limit_callback [timestamp: %i, request_count: %i," " elapsed_secs: %i]",
+        "rate_limit_callback [timestamp: %i, request_count: %i,"
+        " elapsed_secs: %i]",
         now,
         request_count,
         elapsed_secs,
@@ -82,7 +85,9 @@ def rate_limit_callback(
     return
 
 
-def validate_customer_id(customer_id: str, session_state: State) -> Tuple[bool, str]:
+def validate_customer_id(
+    customer_id: str, session_state: State
+) -> tuple[bool, str]:
     """
     Validates the customer ID against the customer profile in the session state.
 
@@ -134,8 +139,9 @@ def lowercase_value(value):
 
 
 # Callback Methods
-def before_tool(tool: BaseTool, args: Dict[str, Any], tool_context: CallbackContext):
-
+def before_tool(
+    tool: BaseTool, args: dict[str, Any], tool_context: CallbackContext
+):
     # i make sure all values that the agent is sending to tools are lowercase
     lowercase_value(args)
 
@@ -143,7 +149,9 @@ def before_tool(tool: BaseTool, args: Dict[str, Any], tool_context: CallbackCont
     # solely on the model picking the right customer id. We validate it.
     # Alternative: tools can fetch the customer_id from the state directly.
     if "customer_id" in args:
-        valid, err = validate_customer_id(args["customer_id"], tool_context.state)
+        valid, err = validate_customer_id(
+            args["customer_id"], tool_context.state
+        )
         if not valid:
             return err
 
@@ -151,7 +159,7 @@ def before_tool(tool: BaseTool, args: Dict[str, Any], tool_context: CallbackCont
     # Example logic based on the tool being called.
     if tool.name == "sync_ask_for_approval":
         amount = args.get("value", None)
-        if amount <= 10:  # Example business rule
+        if amount <= MAX_DISCOUNT_RATE:  # Example business rule
             return {
                 "status": "approved",
                 "message": "You can approve this discount; no manager needed.",
@@ -159,15 +167,20 @@ def before_tool(tool: BaseTool, args: Dict[str, Any], tool_context: CallbackCont
         # Add more logic checks here as needed for your tools.
 
     if tool.name == "modify_cart":
-        if args.get("items_added") is True and args.get("items_removed") is True:
+        if (
+            args.get("items_added") is True
+            and args.get("items_removed") is True
+        ):
             return {"result": "I have added and removed the requested items."}
     return None
 
 
 def after_tool(
-    tool: BaseTool, args: Dict[str, Any], tool_context: ToolContext, tool_response: Dict
-) -> Optional[Dict]:
-
+    tool: BaseTool,
+    args: dict[str, Any],
+    tool_context: ToolContext,
+    tool_response: dict,
+) -> dict | None:
     # After approvals, we perform operations deterministically in the callback
     # to apply the discount in the cart.
     if tool.name == "sync_ask_for_approval":

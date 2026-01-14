@@ -15,9 +15,10 @@
 import os
 
 import pytest
-from customer_service.config import Config
 from dotenv import find_dotenv, load_dotenv
 from google.adk.evaluation.agent_evaluator import AgentEvaluator
+
+from customer_service.config import Config
 
 pytest_plugins = ("pytest_asyncio",)
 

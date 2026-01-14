@@ -15,6 +15,7 @@
 import logging
 
 import pytest
+
 from customer_service.config import Config
 
 

@@ -17,11 +17,12 @@ import logging
 import sys
 
 import vertexai
-from customer_service.agent import root_agent
-from customer_service.config import Config
 from google.api_core.exceptions import NotFound
 from vertexai import agent_engines
 from vertexai.preview.reasoning_engines import AdkApp
+
+from customer_service.agent import root_agent
+from customer_service.config import Config
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
