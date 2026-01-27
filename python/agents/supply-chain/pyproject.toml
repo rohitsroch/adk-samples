@@ -1,7 +1,7 @@
 [project]
 name = "supply-chain"
 version = "0.1.0"
-description = "power & energy supply chain AI agent"
+description = "Power & Energy Supply Chain AI Agent"
 authors = [
     {name = "Rohit Sroch",email = "rohitsroch@google.com"}
 ]
